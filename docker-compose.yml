@@ -1,0 +1,44 @@
+version: '2'
+
+volumes:
+  dl_bin: {}
+  out_bin: {}  
+
+services:
+  splitter:
+    build:
+      context: ./web
+    environment:
+      - VIRTUAL_HOST=splitter.test.openrun.net 
+    links:
+      - rabbit
+    volumes:
+      - out_bin:/app/media
+#    expose:
+#      - 80
+
+  rabbit:
+    image: rabbitmq
+    expose:
+     - 15672    
+
+  youtubedl:
+    build:
+      context: ./dl
+    volumes:
+      - dl_bin:/download
+    links:
+      - rabbit
+
+  ffmpeg:
+    build:
+      context: ./ffmpeg
+    volumes:
+      - dl_bin:/input
+      - out_bin:/output
+
+networks:
+  default:
+    external:
+      name: services_default 
+
